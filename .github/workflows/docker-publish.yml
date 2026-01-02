@@ -1,0 +1,52 @@
+on:
+  schedule:
+    - cron: '0 22 * * *'
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test'
+        required: false 
+        type: boolean
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        context: [proxyrouter, chrome, .]
+        include:
+          - context: proxyrouter
+            branch: -proxyrouter
+          - context: chrome
+            branch: -chrome
+          - context: .
+            branch: ""
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set env
+        run: echo "GITHUB_BRANCH=$(echo ${{ github.ref }} | cut -d/ -f3)" >> $GITHUB_ENV
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: ${{ matrix.context }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ github.repository }}:${{ env.GITHUB_BRANCH }}${{ matrix.branch }}

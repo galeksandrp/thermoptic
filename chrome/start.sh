@@ -62,6 +62,7 @@ CHROME_COMMON_FLAGS=(
   --disable-crash-reporter
   "--proxy-server=${CHROME_PROXY_SERVER}"
   "--proxy-bypass-list=${CHROME_PROXY_BYPASS_LIST}"
+  "--disable-web-security"
 )
 
 # Ensure Chrome can still resolve the proxy server when DNS proxying is enabled.

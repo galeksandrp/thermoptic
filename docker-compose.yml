@@ -1,7 +1,6 @@
 services:
   proxyrouter:
-    build:
-      context: ./proxyrouter/
+    image: galeksandrp/thermoptic:ci-proxyrouter
     environment:
       PROXY_ROUTER_PORT: 3128
       # Upstream proxy, leave empty "" for no proxy
@@ -16,8 +15,7 @@ services:
   # For example, this Dockerized Chrome doesn't make use of GPU-rendering
   # which is a giveaway to most anti-bot frameworks that you may be a bot.
   chrome:
-    build:
-      context: ./chrome/
+    image: galeksandrp/thermoptic:ci-chrome
     platform: linux/amd64
     mem_limit: 2g
     depends_on:
@@ -59,7 +57,7 @@ services:
     ports:
       - 127.0.0.1:14111:14111
   thermoptic:
-    build: .
+    image: galeksandrp/thermoptic:ci
     volumes:
       - ./ssl:/work/cassl
       - ./hooks:/work/hooks
